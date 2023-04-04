@@ -1,3 +1,4 @@
+const { CastError } = require('mongoose');
 const Card = require('../models/card');
 const handleError = require('../utils/errors');
 
@@ -40,12 +41,12 @@ module.exports.putLike = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      throw new Error();
+      throw new CastError();
     }
     res.send(card);
   } catch (err) {
     console.log(err);
-    handleError(res, { name: 'ValidationError' });
+    handleError(res, err);
   }
 };
 
@@ -57,11 +58,11 @@ module.exports.deleteLike = async (res, req) => {
       { new: true },
     );
     if (!card) {
-      throw new Error();
+      throw new CastError();
     }
     res.send(card);
   } catch (err) {
     console.log(err);
-    handleError(res, { name: 'ValidationError' });
+    handleError(res, err);
   }
 };
