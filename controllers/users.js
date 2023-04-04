@@ -16,7 +16,7 @@ module.exports.getUserById = async (req, res) => {
     const user = await User.findById(req.params.id);
     res.send(user);
   } catch (err) {
-    console.log(err.name);
+    console.log(err);
     handleError(res, err);
   }
 };
@@ -27,7 +27,7 @@ module.exports.createUser = async (req, res) => {
     const user = await User.create({ name, about, avatar });
     res.send(user);
   } catch (err) {
-    console.log(err.name);
+    console.log(err);
     handleError(res, err);
   }
 };

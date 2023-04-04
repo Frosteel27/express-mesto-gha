@@ -34,27 +34,34 @@ module.exports.deleteCard = async (req, res) => {
 
 module.exports.putLike = async (req, res) => {
   try {
-    await Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
       { new: true },
     );
-    res.send('liked');
+    if (!card) {
+      throw new Error();
+    }
+    res.send(card);
   } catch (err) {
     console.log(err);
-    handleError(res, err);
+    handleError(res, { name: 'ValidationError' });
   }
 };
 
 module.exports.deleteLike = async (res, req) => {
   try {
-    await Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $pull: { likes: req.user._id } },
       { new: true },
     );
+    if (!card) {
+      throw new Error();
+    }
+    res.send(card);
   } catch (err) {
     console.log(err);
-    handleError(res, err);
+    handleError(res, { name: 'ValidationError' });
   }
 };
