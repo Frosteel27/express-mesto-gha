@@ -7,7 +7,7 @@ const errors = {
 const handleError = (res, err) => {
   switch (err.name) {
     case 'CastError':
-      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
+      res.status(errors.BAD_REQUEST).send({ message: 'Bad request' });
       break;
     case 'ValidationError':
       res.status(errors.BAD_REQUEST).send({ message: 'Bad request' });
@@ -18,4 +18,4 @@ const handleError = (res, err) => {
   }
 };
 
-module.exports = handleError;
+module.exports = { handleError, errors };

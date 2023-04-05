@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/users');
 const cardRoutes = require('./routes/cards');
+const { errors } = require('./utils/errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -20,6 +21,9 @@ app.use((req, res, next) => {
 
 app.use('/users', userRoutes);
 app.use('/cards', cardRoutes);
+app.use('*', (req, res) => {
+  res.status(errors.NOT_FOUND).send({ message: 'Page not found' });
+});
 
 app.listen(PORT, () => {
 });

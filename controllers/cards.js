@@ -1,10 +1,9 @@
-const { CastError } = require('mongoose');
 const Card = require('../models/card');
-const handleError = require('../utils/errors');
+const { handleError, errors } = require('../utils/errors');
 
 module.exports.getCards = async (req, res) => {
   try {
-    const cards = await Card.find({}).populate('owner');
+    const cards = await Card.find({});
     res.send(cards);
   } catch (err) {
     console.log(err);
@@ -25,8 +24,12 @@ module.exports.createCard = async (req, res) => {
 
 module.exports.deleteCard = async (req, res) => {
   try {
-    await Card.findByIdAndRemove(req.params.cardId);
-    res.send('done');
+    const card = await Card.findByIdAndRemove(req.params.cardId);
+    if (!card) {
+      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
+      return;
+    }
+    res.send(card);
   } catch (err) {
     console.log(err);
     handleError(res, err);
@@ -41,7 +44,8 @@ module.exports.putLike = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      throw new CastError();
+      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
+      return;
     }
     res.send(card);
   } catch (err) {
@@ -50,7 +54,7 @@ module.exports.putLike = async (req, res) => {
   }
 };
 
-module.exports.deleteLike = async (res, req) => {
+module.exports.deleteLike = async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -58,7 +62,8 @@ module.exports.deleteLike = async (res, req) => {
       { new: true },
     );
     if (!card) {
-      throw new CastError();
+      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
+      return;
     }
     res.send(card);
   } catch (err) {
