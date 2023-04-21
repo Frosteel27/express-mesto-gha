@@ -1,42 +1,42 @@
 const Card = require('../models/card');
-const { handleError, errors } = require('../utils/errors');
+const NOT_FOUND = require('../utils/errors/NOT_FOUND');
+const FORBIDDEN = require('../utils/errors/FORBIDDEN');
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     res.send(cards);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
     res.send(card);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.deleteCard = async (req, res) => {
+module.exports.deleteCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndRemove(req.params.cardId);
     if (!card) {
-      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
-      return;
+      throw new NOT_FOUND('Card not found');
+    }
+    if (card.owner._id.toString() !== req.params._id) {
+      throw new FORBIDDEN('cant delete another\'s card');
     }
     res.send(card);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.putLike = async (req, res) => {
+module.exports.putLike = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -44,17 +44,15 @@ module.exports.putLike = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
-      return;
+      throw new NOT_FOUND('Card not found');
     }
     res.send(card);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.deleteLike = async (req, res) => {
+module.exports.deleteLike = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -62,12 +60,10 @@ module.exports.deleteLike = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
-      return;
+      throw new NOT_FOUND('Card not found');
     }
     res.send(card);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };

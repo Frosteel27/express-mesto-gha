@@ -1,42 +1,58 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { handleError, errors } = require('../utils/errors');
+const NOT_FOUND = require('../utils/errors/NOT_FOUND');
+const CONFLICT = require('../utils/errors/CONFLICT');
 
-module.exports.getUsers = async (req, res) => {
+module.exports.getUsers = async (req, res, next) => {
   try {
     const user = await User.find({});
     res.send(user);
   } catch (err) {
-    console.log(err.name);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.getUserById = async (req, res) => {
+module.exports.getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      res.status(errors.NOT_FOUND).send({ message: 'Entity not found' });
-      return;
+      throw new NOT_FOUND('User not found');
     }
     res.send(user);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.createUser = async (req, res) => {
+module.exports.createUser = async (req, res, next) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = await User.create({ name, about, avatar });
+    const {
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    } = req.body;
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
     res.send(user);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    if (err.code === 11000) {
+      next(new CONFLICT('Account with this email already exists'));
+    } else {
+      next(err);
+    }
   }
 };
 
-module.exports.updateUserInfo = async (req, res) => {
+module.exports.updateUserInfo = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -46,12 +62,11 @@ module.exports.updateUserInfo = async (req, res) => {
     );
     res.send(updatedUser);
   } catch (err) {
-    console.log(err.name);
-    handleError(res, err);
+    next(err);
   }
 };
 
-module.exports.updateAvatar = async (req, res) => {
+module.exports.updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -61,7 +76,29 @@ module.exports.updateAvatar = async (req, res) => {
     );
     res.send(updatedUser);
   } catch (err) {
-    console.log(err);
-    handleError(res, err);
+    next(err);
+  }
+};
+
+module.exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, 'super-strong-secret');
+    res.cookie('jwt', token, {
+      maxAge: 3600000 * 24 * 7,
+      httpOnly: true,
+    }).end();
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.send(user);
+  } catch (err) {
+    next(err);
   }
 };
