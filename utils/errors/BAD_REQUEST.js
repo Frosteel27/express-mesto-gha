@@ -1,6 +1,6 @@
 class BAD_REQUEST extends Error {
-  constructor(msg) {
-    super(msg);
+  constructor(message) {
+    super(message);
     this.errorCode = 400;
   }
 }
