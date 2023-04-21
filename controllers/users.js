@@ -89,6 +89,7 @@ module.exports.login = async (req, res, next) => {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
     }).end();
+    res.send(token);
   } catch (err) {
     next(err);
   }
