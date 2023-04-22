@@ -35,14 +35,22 @@ module.exports.createUser = async (req, res, next) => {
       password,
     } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    await User.create({
+    const user = await User.create({
       name,
       about,
       avatar,
       email,
       password: hash,
     });
-    res.send('В ответе не содержится password созданного пользователя');
+    res.send({
+      data: {
+        name: user.name,
+        avatar: user.avatar,
+        about: user.about,
+        email: user.email,
+        _id: user._id,
+      },
+    });
   } catch (err) {
     if (err.code === 11000) {
       next(new CONFLICT('Account with this email already exists'));
