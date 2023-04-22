@@ -35,14 +35,14 @@ module.exports.createUser = async (req, res, next) => {
       password,
     } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    await User.create({
       name,
       about,
       avatar,
       email,
       password: hash,
     });
-    res.send(user);
+    res.send('В ответе не содержится password созданного пользователя');
   } catch (err) {
     if (err.code === 11000) {
       next(new CONFLICT('Account with this email already exists'));
@@ -84,11 +84,11 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, 'super-strong-secret');
-    res.cookie('jwt', token, {
+    const token = await jwt.sign({ _id: user._id }, 'super-strong-secret');
+    await res.cookie('token', token, {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
-    }).end();
+    });
     res.send(token);
   } catch (err) {
     next(err);

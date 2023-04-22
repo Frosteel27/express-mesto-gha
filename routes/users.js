@@ -12,13 +12,13 @@ const { urlRegex } = require('../utils/constants');
 
 router.get('/', getUsers);
 
+router.get('/me', getMe);
+
 router.get('/:id', celebrate({
   params: Joi.object().keys({
     id: Joi.string().required().hex().length(24),
   }),
 }), getUserById);
-
-router.get('/me', getMe);
 
 router.post('/', createUser);
 
