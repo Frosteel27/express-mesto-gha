@@ -23,13 +23,14 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
+    const card = await Card.findById(req.params.cardId);
     if (!card) {
       throw new NOT_FOUND('Card not found');
     }
-    if (card.owner._id.toString() !== req.params._id) {
+    if (card.owner.toString() !== req.user._id) {
       throw new FORBIDDEN('cant delete another\'s card');
     }
+    await Card.findByIdAndRemove(req.params.cardId);
     res.send(card);
   } catch (err) {
     next(err);
