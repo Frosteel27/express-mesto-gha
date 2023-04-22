@@ -38,7 +38,7 @@ const userSchema = new Schema({
 
 userSchema.statics.findUserByCredentials = async function (email, password) {
   try {
-    const user = await this.findOne({ email }).select(+password);
+    const user = await this.findOne({ email }).select('+password');
     if (!user) {
       return Promise.reject(new UNAUTHORIZED('Wrong email or password'));
     }
