@@ -1,8 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { cachingDecorator } = require('../utils/decorators');
 const NOT_FOUND = require('../utils/errors/NOT_FOUND');
 const CONFLICT = require('../utils/errors/CONFLICT');
+
+const findById = cachingDecorator(User.findById.bind(User));
+const findByIdAndUpdate = cachingDecorator(User.findByIdAndUpdate.bind(User));
 
 module.exports.getUsers = async (req, res, next) => {
   try {
@@ -15,12 +19,13 @@ module.exports.getUsers = async (req, res, next) => {
 
 module.exports.getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await findById(req.params.id);
     if (!user) {
       throw new NOT_FOUND('User not found');
     }
     res.send(user);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
@@ -42,14 +47,10 @@ module.exports.createUser = async (req, res, next) => {
       email,
       password: hash,
     });
-    res.send({
-      data: {
-        name: user.name,
-        avatar: user.avatar,
-        about: user.about,
-        email: user.email,
-        _id: user._id,
-      },
+    const data = user.toObject();
+    delete data.password;
+    res.status(201).send({
+      data,
     });
   } catch (err) {
     if (err.code === 11000) {
@@ -63,7 +64,7 @@ module.exports.createUser = async (req, res, next) => {
 module.exports.updateUserInfo = async (req, res, next) => {
   try {
     const { name, about } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await findByIdAndUpdate(
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
@@ -77,7 +78,7 @@ module.exports.updateUserInfo = async (req, res, next) => {
 module.exports.updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await findByIdAndUpdate(
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
@@ -97,7 +98,7 @@ module.exports.login = async (req, res, next) => {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
     });
-    res.send({ token });
+    res.send({ user });
   } catch (err) {
     next(err);
   }

@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const { REGEXP_URL } = require('../utils/constants');
 
 const cardSchema = new Schema({
   name: {
@@ -10,6 +11,10 @@ const cardSchema = new Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (v) => REGEXP_URL.test(v),
+      message: () => 'ivalid url',
+    },
   },
   owner: {
     type: Schema.Types.ObjectId,
@@ -23,7 +28,7 @@ const cardSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 });
 
