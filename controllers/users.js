@@ -6,7 +6,6 @@ const NOT_FOUND = require('../utils/errors/NOT_FOUND');
 const CONFLICT = require('../utils/errors/CONFLICT');
 
 const findById = cachingDecorator(User.findById.bind(User));
-const findByIdAndUpdate = cachingDecorator(User.findByIdAndUpdate.bind(User));
 
 module.exports.getUsers = async (req, res, next) => {
   try {
@@ -64,13 +63,14 @@ module.exports.createUser = async (req, res, next) => {
 module.exports.updateUserInfo = async (req, res, next) => {
   try {
     const { name, about } = req.body;
-    const updatedUser = await findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
     );
     res.send(updatedUser);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
@@ -78,13 +78,14 @@ module.exports.updateUserInfo = async (req, res, next) => {
 module.exports.updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
-    const updatedUser = await findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
     );
     res.send(updatedUser);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
@@ -100,6 +101,7 @@ module.exports.login = async (req, res, next) => {
     });
     res.send({ user });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
