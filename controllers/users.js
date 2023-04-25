@@ -99,7 +99,9 @@ module.exports.login = async (req, res, next) => {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
     });
-    res.send({ user });
+    const data = user.toObject();
+    delete data.password;
+    res.send({ data });
   } catch (err) {
     console.log(err);
     next(err);
