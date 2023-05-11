@@ -94,14 +94,8 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
-    const token = await jwt.sign({ _id: user._id }, 'super-strong-secret');
-    await res.cookie('token', token, {
-      maxAge: 3600000 * 24 * 7,
-      httpOnly: true,
-    });
-    const data = user.toObject();
-    delete data.password;
-    res.send({ data });
+    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+    res.send({ token });
   } catch (err) {
     console.log(err);
     next(err);

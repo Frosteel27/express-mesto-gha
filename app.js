@@ -10,8 +10,10 @@ const { login, createUser } = require('./controllers/users');
 const { validateLogin, validateRegister } = require('./utils/validators/userValidators');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { PORT } = require('./config');
+const corsPass = require('./middlewares/corsPass');
 
 const app = express();
+app.use(corsPass);
 app.use(express.json());
 app.use(cookieParser());
 mongoose.connect('mongodb://0.0.0.0:27017/mestodb');
